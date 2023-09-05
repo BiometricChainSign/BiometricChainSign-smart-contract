@@ -3,7 +3,7 @@
         {
             "files": "*.sol",
             "options": {
-                "printWidth": 80,
+                "printWidth": 100,
                 "tabWidth": 2,
                 "useTabs": false,
                 "singleQuote": false,
@@ -29,7 +29,7 @@
         {
             "files": "*.js",
             "options": {
-                "printWidth": 80,
+                "printWidth": 100,
                 "tabWidth": 2,
                 "singleQuote": true,
                 "semi": false
@@ -38,7 +38,7 @@
         {
             "files": "*.ts",
             "options": {
-                "printWidth": 80,
+                "printWidth": 100,
                 "tabWidth": 2,
                 "singleQuote": true,
                 "semi": false
