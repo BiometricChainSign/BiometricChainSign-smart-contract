@@ -2,40 +2,39 @@
 pragma solidity ^0.8.0;
 
 contract BiometricChainSign {
-  mapping(address => Signatory) public signatories;
+  // signatoryAddress => cid
+  mapping(address => string) public signatoryCids;
 
   // documentHash => signatoryAddress[]
-  mapping(string => address[]) public signatures;
+  mapping(string => address[]) public documentSignatories;
 
-  function createSignatory(string memory _cid) public {
-    Signatory memory signatory = Signatory(msg.sender, _cid);
-    signatories[msg.sender] = signatory;
+  function setSignatoryCid(string memory _cid) public {
+    require(bytes(signatoryCids[msg.sender]).length == 0, "Signatory cid already set");
+    signatoryCids[msg.sender] = _cid;
   }
 
-  function getSignatory(address _address) public view returns (Signatory memory) {
-    return signatories[_address];
+  function getSignatoryCid(address _address) public view returns (string memory) {
+    return signatoryCids[_address];
   }
 
-  function addSignature(string memory _documentHash) public {
-    Signatory memory signatory = signatories[msg.sender];
+  function signDocument(string memory _documentHash) public {
+    require(bytes(signatoryCids[msg.sender]).length != 0, "Signatory cid not yet set");
 
-    require(bytes(signatory.cid).length != 0, "Signatory not found");
-
-    if (!arrayHasAddress(msg.sender, signatures[_documentHash])) {
-      signatures[_documentHash].push(msg.sender);
+    if (!arrayHasAddress(msg.sender, documentSignatories[_documentHash])) {
+      documentSignatories[_documentHash].push(msg.sender);
     }
   }
 
-  function getSignatureSignatories(
+  function getDocumentSignatories(
     string memory _documentHash
   ) public view returns (address[] memory) {
-    return signatures[_documentHash];
+    return documentSignatories[_documentHash];
   }
 
   function arrayHasAddress(
     address searchAddress,
     address[] memory addressArray
-  ) private pure returns (bool) {
+  ) internal pure returns (bool) {
     for (uint256 i = 0; i < addressArray.length; i++) {
       if (addressArray[i] == searchAddress) {
         // Address found, return true
@@ -44,10 +43,5 @@ contract BiometricChainSign {
     }
     // Address not found, return false
     return false;
-  }
-
-  struct Signatory {
-    address publicAddress;
-    string cid;
   }
 }
