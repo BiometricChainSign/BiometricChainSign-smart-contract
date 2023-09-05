@@ -25,7 +25,7 @@ describe('BiometricChainSign', () => {
     )
   })
 
-  it('should add a signature', async () => {
+  it('should sign a document', async () => {
     const contract = await ethers.deployContract('BiometricChainSign')
     const [signer] = await ethers.getSigners()
 
