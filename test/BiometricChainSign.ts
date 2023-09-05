@@ -42,6 +42,8 @@ describe('BiometricChainSign', () => {
     const contract = await ethers.deployContract('BiometricChainSign')
 
     const documentHash = crypto.randomBytes(32).toString('hex')
-    expect(contract.signDocument(documentHash)).to.be.revertedWith('Signatory cid not yet set')
+    await expect(contract.signDocument(documentHash)).to.be.revertedWith(
+      'Signatory cid not yet set'
+    )
   })
 })
