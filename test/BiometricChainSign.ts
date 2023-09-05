@@ -14,6 +14,18 @@ describe('BiometricChainSign', () => {
     expect(cidOutput).to.deep.equal(cidInput)
   })
 
+  it("should revert when attempting to set a signatory's cid twice", async () => {
+    const contract = await ethers.deployContract('BiometricChainSign')
+    const [signer] = await ethers.getSigners()
+
+    const cidInput = '123456789abcdef'
+    await contract.setSignatoryCid(cidInput)
+
+    await expect(contract.setSignatoryCid('fedcba987654321')).to.be.revertedWith(
+      'Signatory cid already set'
+    )
+  })
+
   it('should add a signature', async () => {
     const contract = await ethers.deployContract('BiometricChainSign')
     const [signer] = await ethers.getSigners()
