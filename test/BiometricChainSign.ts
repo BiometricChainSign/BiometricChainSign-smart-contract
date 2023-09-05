@@ -16,7 +16,6 @@ describe('BiometricChainSign', () => {
 
   it("should revert when attempting to set a signatory's cid twice", async () => {
     const contract = await ethers.deployContract('BiometricChainSign')
-    const [signer] = await ethers.getSigners()
 
     const cidInput = '123456789abcdef'
     await contract.setSignatoryCid(cidInput)
@@ -37,5 +36,12 @@ describe('BiometricChainSign', () => {
     const signatories = await contract.getDocumentSignatories(documentHash)
 
     expect(signatories).to.deep.equal([signer.address])
+  })
+
+  it('should revert when attempting to sign a document without having a cid', async () => {
+    const contract = await ethers.deployContract('BiometricChainSign')
+
+    const documentHash = crypto.randomBytes(32).toString('hex')
+    expect(contract.signDocument(documentHash)).to.be.revertedWith('Signatory cid not yet set')
   })
 })
