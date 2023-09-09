@@ -28,7 +28,7 @@ contract BiometricChainSign {
     Signature memory origDocSig = docSignatures[_origDocHash];
 
     if (bytes(origDocSig.origDocHash).length == 0 && origDocSig.signatories.length == 0) {
-      // neither original or stamped document has been signed yet
+      // neither the original nor the stamped document has been signed yet
       docSignatures[_origDocHash].signatories.push(msg.sender);
       docSignatures[_stampedDocHash].origDocHash = _origDocHash;
       return;
