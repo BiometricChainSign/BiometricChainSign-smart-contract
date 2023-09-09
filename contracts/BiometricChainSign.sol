@@ -40,9 +40,12 @@ contract BiometricChainSign {
       // stamped document hasn't been signed yet
       docSignatures[_stampedDocHash].origDocHash = _origDocHash;
 
-      if (!arrayHasAddress(msg.sender, origDocSig.signatories)) {
-        docSignatures[_origDocHash].signatories.push(msg.sender);
-      }
+      require(
+        !arrayHasAddress(msg.sender, origDocSig.signatories),
+        "Signatory has already signed this document"
+      );
+
+      docSignatures[_origDocHash].signatories.push(msg.sender);
 
       return;
     }
