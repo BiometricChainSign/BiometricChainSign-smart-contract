@@ -73,8 +73,8 @@ describe('BiometricChainSign', () => {
   it('should revert when a single signatory is attempting to sign a document twice', async () => {
     const contract = await ethers.deployContract('BiometricChainSign')
 
-    const cid1 = '123456789abcdef'
-    await contract.setSignatoryCid(cid1)
+    const cid = '123456789abcdef'
+    await contract.setSignatoryCid(cid)
 
     const originalDocumentHash = crypto.randomBytes(32).toString('hex')
     const stampedDocumentHash1 = crypto.randomBytes(32).toString('hex')
@@ -84,5 +84,23 @@ describe('BiometricChainSign', () => {
     await expect(
       contract.signDocument(stampedDocumentHash2, originalDocumentHash)
     ).to.be.revertedWith('Signatory has already signed this document')
+  })
+
+  it('should revert when attempting to sign a stamped document that has already been signed', async () => {
+    const contract = await ethers.deployContract('BiometricChainSign')
+    const [signer1, signer2] = await ethers.getSigners()
+
+    const cid1 = '123456789abcdef'
+    const cid2 = 'fedcba987654321'
+    await contract.setSignatoryCid(cid1)
+    await contract.connect(signer2).setSignatoryCid(cid2)
+
+    const originalDocumentHash = crypto.randomBytes(32).toString('hex')
+    const stampedDocumentHash = crypto.randomBytes(32).toString('hex')
+    await contract.signDocument(stampedDocumentHash, originalDocumentHash)
+
+    await expect(
+      contract.connect(signer2).signDocument(stampedDocumentHash, originalDocumentHash)
+    ).to.be.revertedWith('Stamped document has already been signed')
   })
 })
