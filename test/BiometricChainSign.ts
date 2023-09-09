@@ -31,9 +31,11 @@ describe('BiometricChainSign', () => {
 
     const cid = '123456789abcdef'
     await contract.setSignatoryCid(cid)
-    const documentHash = crypto.randomBytes(32).toString('hex')
-    await contract.signDocument(documentHash)
-    const signatories = await contract.getDocumentSignatories(documentHash)
+
+    const originalDocumentHash = crypto.randomBytes(32).toString('hex')
+    const stampedDocumentHash = crypto.randomBytes(32).toString('hex')
+    await contract.signDocument(stampedDocumentHash, originalDocumentHash)
+    const signatories = await contract.getDocumentSignatories(stampedDocumentHash)
 
     expect(signatories).to.deep.equal([signer.address])
   })
@@ -41,9 +43,11 @@ describe('BiometricChainSign', () => {
   it('should revert when attempting to sign a document without having a cid', async () => {
     const contract = await ethers.deployContract('BiometricChainSign')
 
-    const documentHash = crypto.randomBytes(32).toString('hex')
-    await expect(contract.signDocument(documentHash)).to.be.revertedWith(
-      'Signatory cid not yet set'
-    )
+    const originalDocumentHash = crypto.randomBytes(32).toString('hex')
+    const stampedDocumentHash = crypto.randomBytes(32).toString('hex')
+
+    await expect(
+      contract.signDocument(stampedDocumentHash, originalDocumentHash)
+    ).to.be.revertedWith('Signatory cid not yet set')
   })
 })
