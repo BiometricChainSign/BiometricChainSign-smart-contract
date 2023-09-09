@@ -25,30 +25,33 @@ contract BiometricChainSign {
   function signDocument(string memory _stampedDocHash, string memory _origDocHash) public {
     require(bytes(signatoryCids[msg.sender]).length != 0, "Signatory cid not yet set");
 
+    Signature memory stampedDocSig = docSignatures[_stampedDocHash];
+
+    require(
+      bytes(stampedDocSig.origDocHash).length == 0,
+      "Stamped document has already been signed"
+    );
+
     Signature memory origDocSig = docSignatures[_origDocHash];
 
     if (bytes(origDocSig.origDocHash).length == 0 && origDocSig.signatories.length == 0) {
       // neither the original nor the stamped document has been signed yet
+
       docSignatures[_origDocHash].signatories.push(msg.sender);
       docSignatures[_stampedDocHash].origDocHash = _origDocHash;
       return;
     }
 
-    Signature memory stampedDocSig = docSignatures[_stampedDocHash];
+    // stamped document hasn't been signed yet
 
-    if (bytes(stampedDocSig.origDocHash).length == 0) {
-      // stamped document hasn't been signed yet
-      docSignatures[_stampedDocHash].origDocHash = _origDocHash;
+    docSignatures[_stampedDocHash].origDocHash = _origDocHash;
 
-      require(
-        !arrayHasAddress(msg.sender, origDocSig.signatories),
-        "Signatory has already signed this document"
-      );
+    require(
+      !arrayHasAddress(msg.sender, origDocSig.signatories),
+      "Signatory has already signed this document"
+    );
 
-      docSignatures[_origDocHash].signatories.push(msg.sender);
-
-      return;
-    }
+    docSignatures[_origDocHash].signatories.push(msg.sender);
   }
 
   function getDocumentSignatories(string memory _docHash) public view returns (address[] memory) {
