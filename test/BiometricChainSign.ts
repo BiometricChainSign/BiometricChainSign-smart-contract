@@ -93,7 +93,7 @@ describe('BiometricChainSign', () => {
 
     await expect(
       contract.signDocument(stampedDocumentHash2, originalDocumentHash)
-    ).to.be.revertedWith('Signatory has already signed this document')
+    ).to.be.revertedWith('You have already signed this document')
   })
 
   it('should revert when attempting to sign a stamped document that has already been signed', async () => {

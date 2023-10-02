@@ -28,37 +28,31 @@ contract BiometricChainSign {
     Signature memory stampedDocSig = docSignatures[_stampedDocHash];
 
     require(
-      bytes(stampedDocSig.origDocHash).length == 0,
+      bytes(stampedDocSig.origDocHash).length == 0 && stampedDocSig.signatories.length == 0,
       "Stamped document has already been signed"
     );
 
     Signature memory parentDocSig = docSignatures[_parentDocHash];
 
-    if (bytes(parentDocSig.origDocHash).length == 0 && parentDocSig.signatories.length == 0) {
-      // neither the original nor the stamped document has been signed yet
+    Signature memory origDocSig;
+    string memory origDocHash;
 
-      docSignatures[_parentDocHash].signatories.push(msg.sender);
-      docSignatures[_stampedDocHash].origDocHash = _parentDocHash;
-      return;
+    if (bytes(parentDocSig.origDocHash).length > 0) {
+      // provided parent document is not the original document
+      origDocSig = docSignatures[parentDocSig.origDocHash];
+      origDocHash = parentDocSig.origDocHash;
+    } else {
+      origDocSig = parentDocSig;
+      origDocHash = _parentDocHash;
     }
-
-    // stamped document hasn't been signed yet
 
     require(
-      !arrayHasAddress(msg.sender, parentDocSig.signatories),
-      "Signatory has already signed this document"
+      !arrayHasAddress(msg.sender, origDocSig.signatories),
+      "You have already signed this document"
     );
 
-    if (bytes(parentDocSig.origDocHash).length == 0) {
-      // parent document is the original document
-
-      docSignatures[_parentDocHash].signatories.push(msg.sender);
-      docSignatures[_stampedDocHash].origDocHash = _parentDocHash;
-      return;
-    }
-
-    docSignatures[_stampedDocHash].origDocHash = parentDocSig.origDocHash;
-    docSignatures[parentDocSig.origDocHash].signatories.push(msg.sender);
+    docSignatures[origDocHash].signatories.push(msg.sender);
+    docSignatures[_stampedDocHash].origDocHash = origDocHash;
   }
 
   function getDocumentSignatories(string memory _docHash) public view returns (address[] memory) {
