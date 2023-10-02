@@ -22,7 +22,7 @@ contract BiometricChainSign {
     return signatoryCids[_address];
   }
 
-  function signDocument(string memory _stampedDocHash, string memory _origDocHash) public {
+  function signDocument(string memory _stampedDocHash, string memory _parentDocHash) public {
     require(bytes(signatoryCids[msg.sender]).length != 0, "Signatory cid not yet set");
 
     Signature memory stampedDocSig = docSignatures[_stampedDocHash];
@@ -32,26 +32,33 @@ contract BiometricChainSign {
       "Stamped document has already been signed"
     );
 
-    Signature memory origDocSig = docSignatures[_origDocHash];
+    Signature memory parentDocSig = docSignatures[_parentDocHash];
 
-    if (bytes(origDocSig.origDocHash).length == 0 && origDocSig.signatories.length == 0) {
+    if (bytes(parentDocSig.origDocHash).length == 0 && parentDocSig.signatories.length == 0) {
       // neither the original nor the stamped document has been signed yet
 
-      docSignatures[_origDocHash].signatories.push(msg.sender);
-      docSignatures[_stampedDocHash].origDocHash = _origDocHash;
+      docSignatures[_parentDocHash].signatories.push(msg.sender);
+      docSignatures[_stampedDocHash].origDocHash = _parentDocHash;
       return;
     }
 
     // stamped document hasn't been signed yet
 
-    docSignatures[_stampedDocHash].origDocHash = _origDocHash;
-
     require(
-      !arrayHasAddress(msg.sender, origDocSig.signatories),
+      !arrayHasAddress(msg.sender, parentDocSig.signatories),
       "Signatory has already signed this document"
     );
 
-    docSignatures[_origDocHash].signatories.push(msg.sender);
+    if (bytes(parentDocSig.origDocHash).length == 0) {
+      // parent document is the original document
+
+      docSignatures[_parentDocHash].signatories.push(msg.sender);
+      docSignatures[_stampedDocHash].origDocHash = _parentDocHash;
+      return;
+    }
+
+    docSignatures[_stampedDocHash].origDocHash = parentDocSig.origDocHash;
+    docSignatures[parentDocSig.origDocHash].signatories.push(msg.sender);
   }
 
   function getDocumentSignatories(string memory _docHash) public view returns (address[] memory) {
